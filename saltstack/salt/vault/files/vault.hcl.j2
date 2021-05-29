@@ -1,0 +1,101 @@
+{% from "vault/map.jinja" import vault with context -%}
+# UI Configuration
+{% if vault.config.ui is defined -%}
+ui = {{ vault.config.ui }}
+{%- endif %}
+
+# Listener Configuration
+listener "tcp" {
+  address = "{{ vault.config.listener.tcp.address }}"
+{%- if vault.config.listener.tcp.tls_disable is defined %}
+  tls_disable = "{{ vault.config.listener.tcp.tls_disable }}"
+{%- endif %}
+{%- if vault.config.listener.tcp.tls_cert_file != "" %}
+  tls_cert_file = "{{ vault.config.listener.tcp.tls_cert_file }}"
+{%- endif %}
+{%- if vault.config.listener.tcp.tls_key_file != "" %}
+  tls_key_file = "{{ vault.config.listener.tcp.tls_key_file }}"
+{%- endif %}
+{%- if vault.config.listener.tcp.tls_client_ca_file is defined %}
+  tls_client_ca_file = "{{ vault.config.listener.tcp.tls_client_ca_file }}"
+{%- endif %}
+}
+
+# Seal Configurations
+{%- if vault.config.seal.type == "shamir" %}
+# Seal type is shamir no stanza required
+{%- elif vault.config.seal.type == "transit" %}
+seal "transit" {
+  address            = {{ vault.config.seal.address }}
+  token              = {{ vault.config.seal.token }}
+  key_name           = "transit_key_name"
+  mount_path         = "transit/"
+  {%- if vault.config.seal.disable_renewal is defined %}
+  disable_renewal    = {{ vault.config.seal.address }}
+  {% endif %}
+  {%- if vault.config.seal.namespace is defined -%}
+  namespace          = {{ vault.config.seal.namespace }}
+  {% endif %}
+  {%- if vault.config.seal.tls_ca_cert is defined -%}
+  tls_ca_cert        = {{ vault.config.seal.tls_ca_cert }}
+  {% endif %}
+  {%- if vault.config.seal.tls_client_cert is defined -%}
+  tls_client_cert    = {{ vault.config.seal.tls_client_cert }}
+  {% endif %}
+  {%- if vault.config.seal.tls_client_key is defined -%}
+  tls_client_key     = {{ vault.config.seal.tls_client_key }}
+  {% endif %}
+  {%- if vault.config.seal.tls_server_name is defined -%}
+  tls_server_name    = {{ vault.config.seal.tls_server_name }}
+  {% endif %}
+  {%- if vault.config.seal.tls_skip_verify is defined -%}
+  tls_skip_verify    = {{ vault.config.seal.tls_skip_verify }}
+  {% endif %}
+}
+{%- elif vault.config.seal.type == "aws_kms" %}
+seal "awskms" {
+  kms_key_id         = {{ vault.config.seal.kms_key_id }}
+  access_key         = {{ vault.config.seal.access_key }}
+  secret_key         = {{ vault.config.seal.secret_key }}
+  {% if vault.config.seal.region is defined -%}
+  region             = {{ vault.config.seal.region }}
+  {% endif %}
+  {%- if vault.config.seal.session_token is defined -%}
+  session_token      = {{ vault.config.seal.session_token }}
+  {% endif %}
+  {%- if vault.config.seal.endpoint is defined -%}
+  endpoint           = {{ vault.config.seal.endpoint }}
+  {% endif %}
+}
+{%- endif %}
+
+# Storage Configuration
+{%- if vault.config.storage.raft is defined %}
+storage "raft" {
+  node_id = "{{ vault.config.storage.raft.node_id }}"
+  path = "{{ vault.config.storage.raft.path }}"
+  {%- if vault.config.storage.retry_join is defined %}
+  {%- for server in vault.config.storage.retry_join %}
+  retry_join {
+    leader_api_addr = "{{ server }}"
+  }
+  {%- endfor %}
+  {%- endif %}
+}
+{%- endif %}
+
+# Cluster Configuration
+{%- if vault.config.cluster_addr is defined %}
+cluster_addr = "{{ vault.config.cluster_addr }}"
+{%- endif %}
+{%- if vault.config.api_addr is defined %}
+api_addr = "{{ vault.config.api_addr }}"
+{%- endif %}
+
+# Lease Configuration
+{%- if vault.config.max_lease_ttl is defined %}
+max_lease_ttl = "{{ vault.config.max_lease_ttl }}"
+{%- endif %}
+{%- if vault.config.default_lease_ttl is defined %}
+default_lease_ttl = "{{ vault.config.default_lease_ttl }}"
+{%- endif %}

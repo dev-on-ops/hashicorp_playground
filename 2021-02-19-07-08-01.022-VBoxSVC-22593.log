@@ -1,0 +1,7 @@
+Log created: 2021-02-19T07:08:01.225594000Z
+Process ID:  22593 (0x5841)
+Parent PID:  1932 (0x78c)
+Executable:  /usr/lib/virtualbox/VBoxSVC
+Arg[0]: /usr/lib/virtualbox/VBoxSVC
+Arg[1]: --auto-shutdown
+AddRef: illegal refcnt=3221225469 state=2
